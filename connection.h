@@ -25,7 +25,6 @@ private:
     private:
         void run() override;
         Connection *m_connection = nullptr;
-        int m_pipe_rx = -1;
     };
 
     class TxThread : public Thread
@@ -37,7 +36,6 @@ private:
     private:
         void run() override;
         Connection *m_connection = nullptr;
-        int m_pipe_tx = -1;
     };
 
     int m_socket = -1;

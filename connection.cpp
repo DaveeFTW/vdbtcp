@@ -1,6 +1,8 @@
 #include "connection.h"
 #include "log.h"
 
+#include <vdb.h>
+
 #include <psp2/net/net.h>
 #include <psp2/kernel/error.h>
 
@@ -79,20 +81,11 @@ Connection::RxThread::RxThread(Connection *connection)
     : Thread("tcp-rx-thread")
     , m_connection(connection)
 {
-    m_pipe_rx = sceKernelOpenMsgPipe("vdb-pipe-rx");
-
-    if (m_pipe_rx < 0)
-    {
-        LOG("error opening shared \"vdb-pipe-rx\" pipe: 0x%08X\n", m_pipe_rx);
-        return;
-    }
-
     setStackSize(0x3000);
 }
 
 Connection::RxThread::~RxThread()
 {
-    sceKernelDeleteMsgPipe(m_pipe_rx);
 }
 
 void Connection::RxThread::run()
@@ -113,7 +106,7 @@ void Connection::RxThread::run()
             break;
         }
 
-        res = sceKernelSendMsgPipe(m_pipe_rx, data, res, 1, nullptr, nullptr);
+        res = vdb_send_serial_pipe(data, res);
 
         if (res < 0)
         {
@@ -129,20 +122,11 @@ Connection::TxThread::TxThread(Connection *connection)
     : Thread("tcp-tx-thread")
     , m_connection(connection)
 {
-    m_pipe_tx = sceKernelOpenMsgPipe("vdb-pipe-tx");
-
-    if (m_pipe_tx < 0)
-    {
-        LOG("error opening shared \"vdb-pipe-tx\" pipe: 0x%08X\n", m_pipe_tx);
-        return;
-    }
-
     setStackSize(0x3000);
 }
 
 Connection::TxThread::~TxThread()
 {
-    sceKernelDeleteMsgPipe(m_pipe_tx);
 }
 
 void Connection::TxThread::run()
@@ -154,7 +138,7 @@ void Connection::TxThread::run()
 
         auto timeout = 100000u; // us
         // receive data from the kernel
-        auto res = sceKernelReceiveMsgPipe(m_pipe_tx, data, sizeof(data), 0, &size, &timeout);
+        auto res = vdb_recv_serial_pipe(data, sizeof(data), timeout);
 
         if (res < 0)
         {
@@ -167,6 +151,7 @@ void Connection::TxThread::run()
             return;
         }
 
+        size = res;
         res = m_connection->send(data, size);
 
         if (res < 0)
