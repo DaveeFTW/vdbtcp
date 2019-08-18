@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "gdbconnection.h"
 #include "log.h"
 
 #include <vdb.h>
@@ -10,13 +10,7 @@
 #include <psp2/kernel/threadmgr.h>
 extern "C" int sceKernelOpenMsgPipe(const char *name);
 
-Connection::Connection()
-    : m_rxThread(this)
-    , m_txThread(this)
-{
-}
-
-Connection::Connection(int socket)
+GdbConnection::GdbConnection(int socket)
     : m_socket(socket)
     , m_valid(true)
     , m_rxThread(this)
@@ -44,7 +38,7 @@ Connection::Connection(int socket)
     m_txThread.start();
 }
 
-Connection::~Connection()
+GdbConnection::~GdbConnection()
 {
     if (!m_valid)
     {
@@ -54,22 +48,22 @@ Connection::~Connection()
     close();
 }
 
-bool Connection::valid() const
+bool GdbConnection::valid() const
 {
     return m_valid;
 }
 
-int Connection::recv(char *data, unsigned int length) const
+int GdbConnection::recv(char *data, unsigned int length) const
 {
     return sceNetRecv(m_socket, data, length, 0);
 }
 
-int Connection::send(const char *data, unsigned int length) const
+int GdbConnection::send(const char *data, unsigned int length) const
 {
     return sceNetSend(m_socket, data, length, 0);
 }
 
-int Connection::close()
+int GdbConnection::close()
 {
     auto res = sceNetSocketClose(m_socket);
     m_socket = -1;
@@ -77,18 +71,18 @@ int Connection::close()
     return res;
 }
 
-Connection::RxThread::RxThread(Connection *connection)
+GdbConnection::RxThread::RxThread(GdbConnection *connection)
     : Thread("tcp-rx-thread")
     , m_connection(connection)
 {
     setStackSize(0x3000);
 }
 
-Connection::RxThread::~RxThread()
+GdbConnection::RxThread::~RxThread()
 {
 }
 
-void Connection::RxThread::run()
+void GdbConnection::RxThread::run()
 {
     while (m_connection->valid())
     {
@@ -118,18 +112,18 @@ void Connection::RxThread::run()
     m_connection->close();
 }
 
-Connection::TxThread::TxThread(Connection *connection)
+GdbConnection::TxThread::TxThread(GdbConnection *connection)
     : Thread("tcp-tx-thread")
     , m_connection(connection)
 {
     setStackSize(0x3000);
 }
 
-Connection::TxThread::~TxThread()
+GdbConnection::TxThread::~TxThread()
 {
 }
 
-void Connection::TxThread::run()
+void GdbConnection::TxThread::run()
 {
     while (m_connection->valid())
     {

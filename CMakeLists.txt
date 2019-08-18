@@ -8,7 +8,10 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(vdbtcp)
+set(CMAKE_C_COMPILER_FORCED True)
+set(CMAKE_CXX_COMPILER_FORCED True)
+
+project(vdbtcp C CXX)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -std=c99 -fno-strict-aliasing")
@@ -16,18 +19,22 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wl,-q -Wall -O3 -nostdlib -f
 
 add_executable(vdbtcp
   main.cpp 
-  connection.cpp
+  gdbconnection.cpp
+  ftpconnection.cpp
   network.cpp
-  server.cpp
   thread.cpp
   eventflag.cpp
   abi.cpp
+  ftp.c
+  strlcat.c
   log.h
 )
 
 target_link_libraries(vdbtcp
+  c
   gcc
   vdb_user_stub
+  SceIofilemgr_stub
   SceKernelThreadMgr_stub
   SceLibKernel_stub
   SceNetCtl_stub_weak

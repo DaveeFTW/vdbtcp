@@ -1,7 +1,9 @@
-#include "connection.h"
+#include "gdbconnection.h"
+#include "ftpconnection.h"
 #include "network.h"
 #include "server.h"
 #include "log.h"
+#include "ftp.h"
 
 #include <vdb.h>
 
@@ -41,9 +43,10 @@ namespace
         {
             network.waitUntilConnected();
 
-            Server server;
+            Server<GdbConnection> gdb;
+            Server<FtpConnection> ftp;
 
-            if (!server.listen(31337))
+            if (!gdb.listen(31337))
             {
                 if (!network.connected())
                 {
@@ -52,7 +55,21 @@ namespace
                 }
                 else
                 {
-                    LOG("failed to listen to port. aborting\n");
+                    LOG("failed to listen to gdb port. aborting\n");
+                    break;
+                }
+            }
+
+            if (!ftp.listen(1337))
+            {
+                if (!network.connected())
+                {
+                    LOG("network disconnected: retrying connection\n");
+                    continue;
+                }
+                else
+                {
+                    LOG("failed to listen to ftp port. aborting\n");
                     break;
                 }
             }
@@ -61,15 +78,8 @@ namespace
 
             while (network.connected())
             {
-                auto connection = server.waitForConnection();
-
-                LOG("got connection\n");
-
-                while (connection.valid())
-                {
-                    // yield
-                    sceKernelDelayThread(100);
-                }
+                // yield
+                sceKernelDelayThread(100);
             }
         }
 

@@ -2,12 +2,11 @@
 
 #include "thread.h"
 
-class Connection
+class GdbConnection
 {
 public:
-    Connection();
-    Connection(int socket);
-    ~Connection();
+    GdbConnection(int socket);
+    ~GdbConnection();
 
     bool valid() const;
 
@@ -19,23 +18,23 @@ private:
     class RxThread : public Thread
     {
     public:
-        RxThread(Connection *connection);
+        RxThread(GdbConnection *connection);
         ~RxThread();
 
     private:
         void run() override;
-        Connection *m_connection = nullptr;
+        GdbConnection *m_connection = nullptr;
     };
 
     class TxThread : public Thread
     {
     public:
-        TxThread(Connection *connection);
+        TxThread(GdbConnection *connection);
         ~TxThread();
 
     private:
         void run() override;
-        Connection *m_connection = nullptr;
+        GdbConnection *m_connection = nullptr;
     };
 
     int m_socket = -1;
