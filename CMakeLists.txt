@@ -19,6 +19,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wl,-q -Wall -O3 -nostdlib -f
 
 add_executable(vdbtcp
   main.cpp 
+  commandconnection.cpp
   gdbconnection.cpp
   ftpconnection.cpp
   network.cpp
@@ -39,6 +40,8 @@ target_link_libraries(vdbtcp
   SceLibKernel_stub
   SceNetCtl_stub_weak
   SceNet_stub_weak
+  SceAppMgr_stub_weak
+  ScePower_stub_weak
 )
 
 add_custom_target(exports SOURCES exports.yml)

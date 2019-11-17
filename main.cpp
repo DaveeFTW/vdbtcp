@@ -1,3 +1,4 @@
+#include "commandconnection.h"
 #include "gdbconnection.h"
 #include "ftpconnection.h"
 #include "network.h"
@@ -27,6 +28,7 @@ namespace
 
             Server<GdbConnection> gdb;
             Server<FtpConnection> ftp;
+            Server<CommandConnection> commands;
 
             if (!gdb.listen(31337))
             {
@@ -52,6 +54,20 @@ namespace
                 else
                 {
                     LOG("failed to listen to ftp port. aborting\n");
+                    break;
+                }
+            }
+
+            if (!commands.listen(1338))
+            {
+                if (!network.connected())
+                {
+                    LOG("network disconnected: retrying connection\n");
+                    continue;
+                }
+                else
+                {
+                    LOG("failed to listen to command port. aborting\n");
                     break;
                 }
             }
