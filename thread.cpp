@@ -9,18 +9,24 @@ Thread::Thread(const char *name)
 
 }
 
+Thread::~Thread()
+{
+    sceKernelWaitThreadEnd(m_thid, nullptr, nullptr);
+    sceKernelDeleteThread(m_thid);
+}
+
 int Thread::start()
 {
-    int res = sceKernelCreateThread(m_name, &threadEntry, 0x40, m_stackSize, 0, 0, NULL);
+    const auto thid = sceKernelCreateThread(m_name, &threadEntry, 0x40, m_stackSize, 0, 0, NULL);
 
-    if (res < 0)
+    if (thid < 0)
     {
-        LOG("failed to create thread: 0x%08X\n", res);
-        return res;
+        LOG("failed to create thread: 0x%08X\n", thid);
+        return thid;
     }
 
     Thread *ptr = this;
-    res = sceKernelStartThread(res, sizeof(ptr), &ptr);
+    const auto res = sceKernelStartThread(thid, sizeof(ptr), &ptr);
 
     if (res < 0)
     {
@@ -28,6 +34,7 @@ int Thread::start()
         return res;
     }
 
+    m_thid = thid;
     return 0;
 }
 

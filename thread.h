@@ -6,6 +6,7 @@ class Thread
 {
 public:
     Thread(const char *name = "");
+    ~Thread();
 
     int start();
 
