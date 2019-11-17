@@ -142,7 +142,7 @@ void GdbConnection::TxThread::run()
             }
 
             LOG("error receiving data from the kernel 0x%08X\n", res);
-            return;
+            break;
         }
 
         size = res;
