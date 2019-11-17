@@ -13,26 +13,8 @@
 
 namespace
 {
-    bool removeSelf()
-    {
-        int res = sceIoRemove("ux0:tai/vdbtcp.suprx");
-
-        if (res < 0)
-        {
-            LOG("failed to remove self: 0x%08X\n", res);
-            return false;
-        }
-
-        return true;
-    }
-
     int threadEntry(SceSize args, void *argp)
     {
-        if (!removeSelf())
-        {
-            return 1;
-        }
-
         // wait 5 seconds for VSH to load
         sceKernelDelayThread(5*1000*1000);
 
